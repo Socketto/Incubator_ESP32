@@ -1,0 +1,6 @@
+status - status of board
+gallina - set animal
+quaglia - set animal
+noanimal - set animal
+reset - reset start time
+reboot - reboot board
