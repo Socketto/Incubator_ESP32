@@ -4,6 +4,9 @@
 String ipMqtt;
 String usernameMQTT;
 String passwordMQTT;
+char mqtt_server_chars[100];
+char mqtt_Password_chars[100];
+char mqtt_user_chars[100];
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -16,10 +19,11 @@ void MQTT_setServer() {
   ipMqtt = preferences.getString("URL_MQTT", "");
   usernameMQTT = preferences.getString("USERNAME_MQTT", "");
   passwordMQTT = preferences.getString("PASSWORD_MQTT", "");
-  usernameMQTT
-  passwordMQTT
+  mqtt_server.toCharArray(mqtt_server_chars, ipMqtt.length() + 1);
+  passwordMQTT.toCharArray(mqtt_Password_chars, passwordMQTT.length() + 1);
+  usernameMQTT.toCharArray(mqtt_user_chars, usernameMQTT.length() + 1);
   preferences.end();
-  client.setServer(ipMqtt, 1883);
+  client.setServer(mqtt_server, 1883);
   client.setBufferSize(2048);
 }
 
@@ -129,7 +133,7 @@ bool MQTT_reconnect() {
     }
 
     sprintf(ClientName, "Incubator_ESP32");
-    if (client.connect(ClientName, usernameMQTT, passwordMQTT)) {
+    if (client.connect(ClientName, mqtt_user_chars, mqtt_Password_chars)) {
       Serial.println("connected");
       client.setCallback(callback);
       TFT_log("MQTT CONNECTED", "OK", 0);
