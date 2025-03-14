@@ -23,7 +23,7 @@ void MQTT_setServer() {
   passwordMQTT.toCharArray(mqtt_Password_chars, passwordMQTT.length() + 1);
   usernameMQTT.toCharArray(mqtt_user_chars, usernameMQTT.length() + 1);
   preferences.end();
-  client.setServer(mqtt_server, 1883);
+  client.setServer(mqtt_server_chars, 1883);
   client.setBufferSize(2048);
 }
 
