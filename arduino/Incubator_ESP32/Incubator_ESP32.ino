@@ -179,6 +179,7 @@ void setup() {
   TFT_log_init();
   delay(200);
   WiFi.mode(WIFI_STA);
+  preferences.begin("my-app", true);
   ssid = preferences.getString("SSID", "");
   ssidpassword = preferences.getString("SSIDPSW", "");
     if (ssid == "" || ssidpassword == "") {
@@ -208,6 +209,7 @@ void setup() {
   }
   BOTtoken = preferences.getString("TELEGRAM_BOT", "");
   AdminTelegram = preferences.getString("TELEGRAM_ADMIN", "");
+  preferences.end();
   Green(true);
   Serial.println("TelegramSetup()");
   TelegramSetup();
