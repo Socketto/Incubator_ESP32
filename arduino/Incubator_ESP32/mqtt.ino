@@ -19,7 +19,7 @@ void MQTT_setServer() {
   ipMqtt = preferences.getString("URL_MQTT", "");
   usernameMQTT = preferences.getString("USERNAME_MQTT", "");
   passwordMQTT = preferences.getString("PASSWORD_MQTT", "");
-  mqtt_server.toCharArray(mqtt_server_chars, ipMqtt.length() + 1);
+  ipMqtt.toCharArray(mqtt_server_chars, ipMqtt.length() + 1);
   passwordMQTT.toCharArray(mqtt_Password_chars, passwordMQTT.length() + 1);
   usernameMQTT.toCharArray(mqtt_user_chars, usernameMQTT.length() + 1);
   preferences.end();
