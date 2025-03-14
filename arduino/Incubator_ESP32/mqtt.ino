@@ -1,7 +1,9 @@
 #include <WiFiClient.h>
 #include <PubSubClient.h>
 
-
+String ipMqtt;
+String usernameMQTT;
+String passwordMQTT;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -10,7 +12,14 @@ void MQTT_loop() {
 }
 
 void MQTT_setServer() {
-  client.setServer("192.168.1.12", 1883);
+  preferences.begin("my-app", true);
+  ipMqtt = preferences.getString("URL_MQTT", "");
+  usernameMQTT = preferences.getString("USERNAME_MQTT", "");
+  passwordMQTT = preferences.getString("PASSWORD_MQTT", "");
+  usernameMQTT
+  passwordMQTT
+  preferences.end();
+  client.setServer(ipMqtt, 1883);
   client.setBufferSize(2048);
 }
 
@@ -120,7 +129,7 @@ bool MQTT_reconnect() {
     }
 
     sprintf(ClientName, "Incubator_ESP32");
-    if (client.connect(ClientName, "mqtt_user", "1982")) {
+    if (client.connect(ClientName, usernameMQTT, passwordMQTT)) {
       Serial.println("connected");
       client.setCallback(callback);
       TFT_log("MQTT CONNECTED", "OK", 0);
