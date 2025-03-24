@@ -318,7 +318,10 @@ double readtemp() {
   Tc = T - 273.15;                         // Celsius
   Tf = Tc * 9 / 5 + 32;                    // Fahrenheit
   //if (Tc > 0) Serial.println(Tc);
-
+  if(isnan(Tc))
+  {
+    Tc = 37; //STD value for temperature incubator
+  }
   return Tc;
 }
 
@@ -345,6 +348,11 @@ double readtempEXT() {
   Tc = T - 273.15;                         // Celsius
   Tf = Tc * 9 / 5 + 32;                    // Fahrenheit
   //if (Tc > 0) Serial.println(Tc);
+  
+  if(isnan(Tc))
+  {
+    Tc = 15;
+  }
 
   if(FirstReadExtTemp)
   {

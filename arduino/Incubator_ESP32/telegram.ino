@@ -4,6 +4,7 @@
 #include <Preferences.h>
 #include <HTTPClient.h>
 
+UniversalTelegramBot* bot;  // Dichiarazione del puntatore
 // Initialize Telegram BOT
 char MessageAuthomatic[400];
 
@@ -27,7 +28,6 @@ float extractFloat(String input) {
 
 char messaget[400];
 WiFiClientSecure clientt;
-UniversalTelegramBot bot(BOTtoken, clientt);
 
 // Checks for new messages every 1 second.
 int botRequestDelay = 1000;
@@ -41,31 +41,31 @@ void handleNewMessages(int numNewMessages) {
 
   for (int i = 0; i < numNewMessages; i++) {
     // Chat id of the requester
-    String chat_id = String(bot.messages[i].chat_id);
+    String chat_id = String(bot->messages[i].chat_id);
     if (userAuthorized(chat_id) == false) {
-      bot.sendMessage(chat_id, "Unauthorized user", "");
+      bot->sendMessage(chat_id, "Unauthorized user", "");
       continue;
     }
 
     // Print the received message
-    String text = bot.messages[i].text;
+    String text = bot->messages[i].text;
     Serial.println(text);
 
-    String from_name = bot.messages[i].from_name;
+    String from_name = bot->messages[i].from_name;
 
     if (text == "/start") {
       String welcome = "Welcome";
-      bot.sendMessage(chat_id, welcome, "");
+      bot->sendMessage(chat_id, welcome, "");
     }
 
     if (text == "/status") {
       if (Temp1Ready) {
         sprintf(messaget, "Wifi signal: %d%%\n%s\n%s\nTemperature: %2.1f°C\nHumidity: %2.1f%%\nStart: %s\n", testpercentage, Animale, GiorniPassati, tempext, humidity,StartIncubata);
-        bot.sendMessage(chat_id, messaget, "");
+        bot->sendMessage(chat_id, messaget, "");
         MQTT_Publish();
       } else {
         sprintf(messaget, "Wifi signal: %d%%", testpercentage);
-        bot.sendMessage(chat_id, messaget, "");
+        bot->sendMessage(chat_id, messaget, "");
       }
     }
 
@@ -74,7 +74,7 @@ void handleNewMessages(int numNewMessages) {
       preferences.putInt("Animale", 0);
       animaleint = 0;
       preferences.end();
-      bot.sendMessage(chat_id, "Ok", "");
+      bot->sendMessage(chat_id, "Ok", "");
       AlarmsManagement = true;
     }
 
@@ -83,7 +83,7 @@ void handleNewMessages(int numNewMessages) {
       preferences.putInt("Animale", 1);
       animaleint = 1;
       preferences.end();
-      bot.sendMessage(chat_id, "Ok", "");
+      bot->sendMessage(chat_id, "Ok", "");
       AlarmsManagement = true;
     }
 
@@ -92,40 +92,40 @@ void handleNewMessages(int numNewMessages) {
       preferences.putInt("Animale", 2);
       animaleint = 2;
       preferences.end();
-      bot.sendMessage(chat_id, "Ok", "");
+      bot->sendMessage(chat_id, "Ok", "");
       AlarmsManagement = false;
     }
     
     if (text == "reset-display") {
       ResetTFT();
-      bot.sendMessage(chat_id, "Ok", "");
+      bot->sendMessage(chat_id, "Ok", "");
     }
 
     if (text == "soft-reset-tft"){
       SoftResetTFT();
-      bot.sendMessage(chat_id, "Ok", "");
+      bot->sendMessage(chat_id, "Ok", "");
     }
     
      
     if (text == "/reset") {
       Reset = true;
-      bot.sendMessage(chat_id, "Ok", "");
+      bot->sendMessage(chat_id, "Ok", "");
     }
 
     if (text == "/reboot") {
-      bot.sendMessage(chat_id, "Ok", "");
+      bot->sendMessage(chat_id, "Ok", "");
       RebootRequested = 7;
     }
 
     if (text.startsWith("set-temp "))
     {
       desiredT = extractFloat(text);
-      bot.sendMessage(chat_id, "Ok", "");
+      bot->sendMessage(chat_id, "Ok", "");
     }
     if (text.startsWith("set-hum "))
     {
       desiredH = extractFloat(text);
-      bot.sendMessage(chat_id, "Ok", "");
+      bot->sendMessage(chat_id, "Ok", "");
     }
 
   }
@@ -140,13 +140,13 @@ bool messageStart = false;
 void SendBOTStart() {
   if (messageStart == false) {
     messageStart = true;
-    bot.sendMessage("134947143", "Build: " __DATE__ " " __TIME__, "");
+    bot->sendMessage("134947143", "Build: " __DATE__ " " __TIME__, "");
   }
 }
 
 void SendDailyBot() {
   sprintf(MessageAuthomatic, "Giorno %d", giornipassatiintold);
-  bot.sendMessage("134947143", MessageAuthomatic, "");
+  bot->sendMessage("134947143", MessageAuthomatic, "");
 }
 
 void sendAlarms() {
@@ -163,26 +163,27 @@ void sendAlarms() {
   if (humidity >= 0) {
     if (humidity < desiredH - (histH + 20)) {
       sprintf(MessageAuthomatic, "Umidità troppo bassa! desiderata %2.1f misurata %2.1f", desiredH, humidity);
-      bot.sendMessage("134947143", MessageAuthomatic, "");
+      bot->sendMessage("134947143", MessageAuthomatic, "");
     }
   }
 
   if (Temp1Ready) {
     if (tempext > desiredT + (histT + 3)) {
       sprintf(MessageAuthomatic, "Temperatura troppo alta! desiderata %2.1f misurata %2.1f", desiredT, tempext);
-      bot.sendMessage("134947143", MessageAuthomatic, "");
+      bot->sendMessage("134947143", MessageAuthomatic, "");
     }
     if (tempext < desiredT - (histT + 3)) {
       sprintf(MessageAuthomatic, "Temperatura troppo bassa! desiderata %2.1f misurata %2.1f", desiredT, tempext);
-      bot.sendMessage("134947143", MessageAuthomatic, "");
+      bot->sendMessage("134947143", MessageAuthomatic, "");
     }
   }
 }
 
 void TelegramSetup() {
+  bot = new UniversalTelegramBot(BOTtoken.c_str(), clientt);
   clientt.setCACert(TELEGRAM_CERTIFICATE_ROOT);  // Add root certificate for api.telegram.org
-  bot.longPoll = 60;
-  bot.sendMessage("134947143", "The board has been powered on.", "");
+  bot->longPoll = 60;
+  bot->sendMessage("134947143", "The board has been powered on.", "");
 }
 
 void TelegramLoop() {
@@ -204,15 +205,15 @@ void TelegramLoop() {
         }
         if (sendSchiusaFlag == 1) {
           sendSchiusaFlag = 2;
-          bot.sendMessage("134947143", "Togliere il girauova!", "");
+          bot->sendMessage("134947143", "Togliere il girauova!", "");
         }
         if (DebugMutex) {
           Serial.println("Mutex released");
         }
         xSemaphoreGive(xMutex);  // Rilascia il mutex
       }
-      Serial.println(bot.last_message_received);
-      int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+      Serial.println(bot->last_message_received);
+      int numNewMessages = bot->getUpdates(bot->last_message_received + 1);
       Serial.println(numNewMessages);
       while (numNewMessages) {
         Serial.println("MESSAGE:");
@@ -229,9 +230,9 @@ void TelegramLoop() {
           }
           xSemaphoreGive(xMutex);  // Rilascia il mutex
         }
-        Serial.println(bot.last_message_received);
-        numNewMessages = bot.getUpdates(bot.last_message_received + 1);
-        Serial.println(bot.last_message_received);
+        Serial.println(bot->last_message_received);
+        numNewMessages = bot->getUpdates(bot->last_message_received + 1);
+        Serial.println(bot->last_message_received);
         Serial.println(numNewMessages);
         vTaskDelay(pdMS_TO_TICKS(200));  // Usa FreeRTOS per ritardare il task
       }

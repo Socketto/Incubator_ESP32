@@ -1,6 +1,6 @@
 #include <WiFi.h>
 #include <Preferences.h>
-#define NTC_SAMPLES 50
+#define NTC_SAMPLES 30
 
 
 bool DebugMutex = false;
@@ -168,6 +168,7 @@ void setup() {
   if (animaleint == 2) {
     AlarmsManagement = false;
   }
+  initHeaterTask();
   preferences.end();
   Serial.begin(115200);
   Serial.println("setupIO()");
@@ -207,8 +208,14 @@ void setup() {
     StartAPMode();
     return;
   }
+  else
+  {
+    setupAP();
+  }
   BOTtoken = preferences.getString("TELEGRAM_BOT", "");
+  Serial.println(BOTtoken);
   AdminTelegram = preferences.getString("TELEGRAM_ADMIN", "");
+  Serial.println(AdminTelegram);
   preferences.end();
   Green(true);
   Serial.println("TelegramSetup()");
@@ -276,6 +283,10 @@ void loop() {
   {
     checkAP();
     return;
+  }
+  else
+  {
+    checkAP();
   }
 
   if (millis() > lastCheckReboot + 1000) {  //1 minuto
@@ -394,7 +405,7 @@ void loop() {
     PercentageGiorniPassati = (float)((float)(giornipassatiint * 100) / (float)(giornitotaliint));
     sprintf(GiorniPassati, "Giorni: %d/%d (%2.1f%%)", giornipassatiint, giornitotaliint, PercentageGiorniPassati);
 
-    if (millis() > lastTemperatureMQTT + 60000) {  //1 min
+    if (millis() > lastTemperatureMQTT + 10000) {  //10 sec
       lastTemperatureMQTT = millis();
       MQTT_Publish();
       if(autoresetDisplay > 0) //
@@ -427,12 +438,12 @@ void loop() {
       }
     }
     Updaterows();
-    if (Temp1Ready) {
+    /*if (Temp1Ready) {
       if (tempext > desiredT + histT)
         heater = false;
       if (tempext < desiredT - histT)
         heater = true;
-    }
+    }*/
     humidity = loopDHT();
     if (humidity >= 0) {
       ErrorHumidity = false;
@@ -445,7 +456,7 @@ void loop() {
       ErrorHumidity = true;
     }
     CheckLocalTime();
-    Relay1(heater);
+    //Relay1(heater);
     Relay2(humidifier);
     if (DebugMutex) {
       Serial.println("Mutex released");
