@@ -3,6 +3,7 @@
 #include <ArduinoJson.h>
 #include <Preferences.h>
 #include <HTTPClient.h>
+#include <WiFi.h>
 
 UniversalTelegramBot* bot;  // Dichiarazione del puntatore
 // Initialize Telegram BOT
@@ -60,7 +61,18 @@ void handleNewMessages(int numNewMessages) {
 
     if (text == "/status") {
       if (Temp1Ready) {
-        sprintf(messaget, "Wifi signal: %d%%\n%s\n%s\nTemperature: %2.1f°C\nHumidity: %2.1f%%\nStart: %s\n", testpercentage, Animale, GiorniPassati, tempext, humidity,StartIncubata);
+        sprintf(messaget, "Wifi signal: %d%%\n%s\n%s\nTemperature: %2.1f°C\nHumidity: %2.1f%%\nStart: %s\nIP: http://%s", testpercentage, Animale, GiorniPassati, tempext, humidity,StartIncubata,WiFi.localIP().toString());
+        bot->sendMessage(chat_id, messaget, "");
+        /*
+        int cycleTime = 10000; // 10 secondi
+        int minOnTime = 3000;  // 2 secondi
+        int customminOnTime = 0;
+        int maxOnTime = 9000;  // 9 secondi
+
+        float deltasetpoint = 0.25;
+        long TimeUpdateMQTT = 60000;
+        */
+        sprintf(messaget, "CycleTime %i\nmin-on-time %i\ncustomminOnTime %i\nmax-on-time %i\nset-delta-set-point %2.2f\nupdate-mqtt %lu", cycleTime, minOnTime, customminOnTime,maxOnTime, deltasetpoint, TimeUpdateMQTT );
         bot->sendMessage(chat_id, messaget, "");
         MQTT_Publish();
       } else {
@@ -122,6 +134,38 @@ void handleNewMessages(int numNewMessages) {
       desiredT = extractFloat(text);
       bot->sendMessage(chat_id, "Ok", "");
     }
+    if (text.startsWith("cycle-time "))
+    {
+      cycleTime = (int)extractFloat(text);
+      bot->sendMessage(chat_id, "Ok", "");
+    }
+    if (text.startsWith("min-on-time "))
+    {
+      minOnTime = (int)extractFloat(text);
+      customminOnTime = minOnTime;
+      bot->sendMessage(chat_id, "Ok", "");
+    }
+    if (text == "default-min-on-time") {
+      customminOnTime = 0;
+      bot->sendMessage(chat_id, "Ok", "");
+    }
+    if (text.startsWith("max-on-time "))
+    {
+      maxOnTime = (int)extractFloat(text);
+      bot->sendMessage(chat_id, "Ok", "");
+    }
+    if (text.startsWith("update-mqtt "))
+    {
+      TimeUpdateMQTT = (int)extractFloat(text);
+      bot->sendMessage(chat_id, "Ok", "");
+    }
+    if (text.startsWith("set-delta-set-point "))
+    {
+      deltasetpoint = extractFloat(text);
+      bot->sendMessage(chat_id, "Ok", "");
+    }
+
+
     if (text.startsWith("set-hum "))
     {
       desiredH = extractFloat(text);

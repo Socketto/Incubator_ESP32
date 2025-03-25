@@ -1,8 +1,4 @@
 
-static int cycleTime = 10000; // 10 secondi
-static int minOnTime = 1000;  // 1 secondo
-static int maxOnTime = 9000;  // 9 secondi
-
 // Variabili per il controllo PWM con millis()
 static unsigned long lastCycleStart = 0;
 static unsigned long heaterOnStart = 0;
@@ -12,6 +8,7 @@ static bool heaterState = false; // Stato attuale del riscaldatore
 
 // Funzione per regolare il riscaldamento
 void regulateHeater(float setpoint) {
+    setpoint =  setpoint + deltasetpoint;
     unsigned long currentTime = millis();
 
     // Legge la temperatura dal sensore ADC
@@ -20,7 +17,7 @@ void regulateHeater(float setpoint) {
     Serial.print("Temperatura: ");
     Serial.print(currentTemp);
     Serial.println(" °C");
-
+    
     // Calcola l'errore rispetto al setpoint
     float error = setpoint - currentTemp;
 

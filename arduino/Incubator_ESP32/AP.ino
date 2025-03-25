@@ -5,7 +5,7 @@ WebServer server(80);
 String index_html =
 "<!DOCTYPE HTML><html><head>"
 "<center><h1>WIFI-INCUBATOR</h1></center>"
-"<title>BULLBOARD settings:</title>"
+"<title>INCUBATOR settings:</title>"
 "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
 "</head><body>"
 "<form action=\"/get\">"

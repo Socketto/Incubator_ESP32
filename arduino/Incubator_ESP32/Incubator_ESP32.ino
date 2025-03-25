@@ -2,6 +2,13 @@
 #include <Preferences.h>
 #define NTC_SAMPLES 30
 
+int cycleTime = 10000; // 10 secondi
+int minOnTime = 3000;  // 2 secondi
+int customminOnTime = 0;
+int maxOnTime = 9000;  // 9 secondi
+
+float deltasetpoint = 0;
+long TimeUpdateMQTT = 60000;
 
 bool DebugMutex = false;
 
@@ -405,7 +412,7 @@ void loop() {
     PercentageGiorniPassati = (float)((float)(giornipassatiint * 100) / (float)(giornitotaliint));
     sprintf(GiorniPassati, "Giorni: %d/%d (%2.1f%%)", giornipassatiint, giornitotaliint, PercentageGiorniPassati);
 
-    if (millis() > lastTemperatureMQTT + 10000) {  //10 sec
+    if (millis() > lastTemperatureMQTT + TimeUpdateMQTT) {  //60 sec
       lastTemperatureMQTT = millis();
       MQTT_Publish();
       if(autoresetDisplay > 0) //
@@ -413,9 +420,28 @@ void loop() {
         autoresetDisplay--;
         if(autoresetDisplay == 0)
         {
-          autoresetDisplay = 30; //30 min
+          autoresetDisplay = 30; //30 mim
           ResetTFT();
         }
+      }
+      if(customminOnTime == 0)
+      {
+          if(readtempEXT() <= 15)
+          {
+            minOnTime = 4000;
+          }
+          if(readtempEXT() > 15)
+          {
+            minOnTime = 3000;
+          }
+          if(readtempEXT() > 20)
+          {
+            minOnTime = 2000;
+          }
+          if(readtempEXT() > 25)
+          {
+            minOnTime = 1000;
+          }
       }
     }
 
