@@ -297,6 +297,7 @@ const float ADC_LUT[4096] = { 0,
                               4084.0000, 4084.8000, 4085.0000, 4085.6001, 4085.8000, 4086.2000, 4086.8000, 4087.0000, 4087.6001, 4087.8000, 4088.2000, 4088.8000, 4089.0000, 4089.6001, 4090.0000,
                               4090.2000, 4090.8000, 4091.0000, 4091.6001, 4092.0000, 4092.2000, 4092.8000, 4093.0000, 4093.8000, 4094.0000, 4094.3999, 4094.8000, 4095.0000, 4095.8000, 4095.80 };
 
+static double lastRead = 37; 
 
 double readtemp() {
   double Vout, Rt = 0;
@@ -320,11 +321,16 @@ double readtemp() {
   //if (Tc > 0) Serial.println(Tc);
   if(isnan(Tc))
   {
-    Tc = 37; //STD value for temperature incubator
+    Tc = lastRead;
   }
-  return Tc;
+  else
+  {
+	lastRead = Tc;
+  }
+  return Tc+deltaTemperature;
 }
 
+static float lastExtReadTemp = 15;
 bool FirstReadExtTemp = true;
 double filteredTemp = 0;
 double alpha = 0.1; // Regola la stabilità
@@ -351,7 +357,11 @@ double readtempEXT() {
   
   if(isnan(Tc))
   {
-    Tc = 15;
+    Tc = lastExtReadTemp;
+  }
+  else
+  {
+	  lastExtReadTemp = Tc;
   }
 
   if(FirstReadExtTemp)

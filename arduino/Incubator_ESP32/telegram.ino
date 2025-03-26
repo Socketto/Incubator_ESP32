@@ -5,26 +5,41 @@
 #include <HTTPClient.h>
 #include <WiFi.h>
 
-UniversalTelegramBot* bot;  // Dichiarazione del puntatore
+UniversalTelegramBot* bot;  // Pointer declaration
 // Initialize Telegram BOT
 char MessageAuthomatic[400];
 
 bool userAuthorized(String value) {
     if (AdminTelegram == value) {
-      return true;  // Valore trovato
+      return true;  // value found
     }
-  return false;  // Valore non trovato
+  return false;  // value not found
 }
 
-// Funzione per estrarre il valore float da una stringa
+
 float extractFloat(String input) {
-    String tempString = "";
+    bool foundDigit = false;
+    String numStr = "";
+    
     for (int i = 0; i < input.length(); i++) {
-        if (isDigit(input[i]) || input[i] == '.') {
-            tempString += input[i];  // Costruisce il numero in formato stringa
+        char c = input[i];
+        
+
+        if (isdigit(c) || c == '.') {
+            numStr += c;
+            foundDigit = true;
+        } 
+
+        else if (c == '-' && !foundDigit && i + 1 < input.length() && isdigit(input[i + 1])) {
+            numStr += c;
+        }
+
+        else if (foundDigit) {
+            break;
         }
     }
-    return tempString.toFloat();  // Converte la stringa in float
+    
+    return numStr.length() > 0 ? numStr.toFloat() : 0.0;
 }
 
 char messaget[400];
@@ -63,16 +78,7 @@ void handleNewMessages(int numNewMessages) {
       if (Temp1Ready) {
         sprintf(messaget, "Wifi signal: %d%%\n%s\n%s\nTemperature: %2.1f°C\nHumidity: %2.1f%%\nStart: %s\nIP: http://%s", testpercentage, Animale, GiorniPassati, tempext, humidity,StartIncubata,WiFi.localIP().toString());
         bot->sendMessage(chat_id, messaget, "");
-        /*
-        int cycleTime = 10000; // 10 secondi
-        int minOnTime = 3000;  // 2 secondi
-        int customminOnTime = 0;
-        int maxOnTime = 9000;  // 9 secondi
-
-        float deltasetpoint = 0.25;
-        long TimeUpdateMQTT = 60000;
-        */
-        sprintf(messaget, "CycleTime %i\nmin-on-time %i\ncustomminOnTime %i\nmax-on-time %i\nset-delta-set-point %2.2f\nupdate-mqtt %lu", cycleTime, minOnTime, customminOnTime,maxOnTime, deltasetpoint, TimeUpdateMQTT );
+        sprintf(messaget, "cycle-time %i\nmin-on-time %i\ncustomminOnTime %i\nmax-on-time %i\nset-delta-set-point %2.2f\nupdate-mqtt %lu\nset-delta-temp %2.2f", cycleTime, minOnTime, customminOnTime,maxOnTime, deltasetpoint, TimeUpdateMQTT,deltaTemperature );
         bot->sendMessage(chat_id, messaget, "");
         MQTT_Publish();
       } else {
@@ -164,6 +170,15 @@ void handleNewMessages(int numNewMessages) {
       deltasetpoint = extractFloat(text);
       bot->sendMessage(chat_id, "Ok", "");
     }
+    if (text.startsWith("set-delta-temp "))
+    {
+      deltaTemperature = extractFloat(text);
+	  preferences.begin("time-info", false);
+      preferences.putFloat("deltaTemperature", deltaTemperature);
+      preferences.end();
+      bot->sendMessage(chat_id, "Ok", "");
+    }
+
 
 
     if (text.startsWith("set-hum "))
@@ -194,12 +209,6 @@ void SendDailyBot() {
 }
 
 void sendAlarms() {
-  /*
-	desiredH = 70;
-					desiredT = 36.9;
-					histT = 0.1;
-					histH = 10;	
-	*/
   if (AlarmsManagement == false) {
     return;
   }
@@ -254,7 +263,7 @@ void TelegramLoop() {
         if (DebugMutex) {
           Serial.println("Mutex released");
         }
-        xSemaphoreGive(xMutex);  // Rilascia il mutex
+        xSemaphoreGive(xMutex);
       }
       Serial.println(bot->last_message_received);
       int numNewMessages = bot->getUpdates(bot->last_message_received + 1);
@@ -272,13 +281,13 @@ void TelegramLoop() {
           if (DebugMutex) {
             Serial.println("Mutex released");
           }
-          xSemaphoreGive(xMutex);  // Rilascia il mutex
+          xSemaphoreGive(xMutex); 
         }
         Serial.println(bot->last_message_received);
         numNewMessages = bot->getUpdates(bot->last_message_received + 1);
         Serial.println(bot->last_message_received);
         Serial.println(numNewMessages);
-        vTaskDelay(pdMS_TO_TICKS(200));  // Usa FreeRTOS per ritardare il task
+        vTaskDelay(pdMS_TO_TICKS(200));
       }
       lastTimeBotRan = millis();
     }

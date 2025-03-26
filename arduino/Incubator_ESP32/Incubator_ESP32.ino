@@ -8,6 +8,7 @@ int customminOnTime = 0;
 int maxOnTime = 9000;  // 9 secondi
 
 float deltasetpoint = 0;
+float deltaTemperature = 0;
 long TimeUpdateMQTT = 60000;
 
 bool DebugMutex = false;
@@ -175,6 +176,7 @@ void setup() {
   if (animaleint == 2) {
     AlarmsManagement = false;
   }
+  deltaTemperature = preferences.getFloat("deltaTemperature", 0);
   initHeaterTask();
   preferences.end();
   Serial.begin(115200);
