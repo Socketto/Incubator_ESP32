@@ -2,14 +2,14 @@
 #include <Preferences.h>
 #define NTC_SAMPLES 30
 
-int cycleTime = 10000; // 10 secondi
-int minOnTime = 3000;  // 2 secondi
-int customminOnTime = 0;
-int maxOnTime = 9000;  // 9 secondi
+volatile int cycleTime = 10000; // 10 secondi
+volatile int minOnTime = 3000;  // 2 secondi
+volatile int customminOnTime = 0;
+volatile int maxOnTime = 9000;  // 9 secondi
 
-float deltasetpoint = 0;
-float deltaTemperature = 0;
-long TimeUpdateMQTT = 60000;
+volatile double deltasetpoint = 0;
+volatile double deltaTemperature = 0;
+volatile long TimeUpdateMQTT = 60000;
 
 bool DebugMutex = false;
 
@@ -170,13 +170,23 @@ void CheckLocalTime() {
 void setup() {
   xMutex = xSemaphoreCreateMutex();  // Creazione del mutex
   strcpy(ChipID, Network.macAddress().c_str());
-  preferences.begin("time-info", true);
+  preferences.begin("incu1", true);
   struct tm timeInfo;
   animaleint = preferences.getInt("Animale", 0);
   if (animaleint == 2) {
     AlarmsManagement = false;
   }
-  deltaTemperature = preferences.getFloat("deltaTemperature", 0);
+
+  deltaTemperature = (double)preferences.getInt("deltaTe", 0.0)/100;
+  deltasetpoint = (double)preferences.getInt("deltase", 0)/100;
+  TimeUpdateMQTT = preferences.getLong("TimQTT", 60000);
+  maxOnTime = preferences.getInt("maxOnTime", 9000);
+  minOnTime = preferences.getInt("minOnTime", 3000);
+  cycleTime = preferences.getInt("cycleTime", 10000);
+  desiredT = preferences.getFloat("desiredT", 37);
+  desiredH = preferences.getFloat("desiredH", 70);
+  customminOnTime = preferences.getInt("customm", 0);
+
   initHeaterTask();
   preferences.end();
   Serial.begin(115200);
