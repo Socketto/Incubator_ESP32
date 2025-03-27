@@ -88,28 +88,28 @@ void handleNewMessages(int numNewMessages) {
     }
 
     if (text == "/gallina") {
-      preferences.begin("incu1", false);
-      preferences.putInt("Animale", 0);
+      preferences_command.begin("incu1", false);
+      preferences_command.putInt("Animale", 0);
       animaleint = 0;
-      preferences.end();
+      preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
       AlarmsManagement = true;
     }
 
     if (text == "/quaglia") {
-      preferences.begin("incu1", false);
-      preferences.putInt("Animale", 1);
+      preferences_command.begin("incu1", false);
+      preferences_command.putInt("Animale", 1);
       animaleint = 1;
-      preferences.end();
+      preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
       AlarmsManagement = true;
     }
 
     if (text == "/noanimal") {
-      preferences.begin("incu1", false);
-      preferences.putInt("Animale", 2);
+      preferences_command.begin("incu1", false);
+      preferences_command.putInt("Animale", 2);
       animaleint = 2;
-      preferences.end();
+      preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
       AlarmsManagement = false;
     }
@@ -135,71 +135,76 @@ void handleNewMessages(int numNewMessages) {
       RebootRequested = 7;
     }
 
+    if (text == "comandi") {
+      bot->sendMessage(chat_id, "reset-display\nsoft-reset-tft\nset-temp 60\ncycle-time 10000\nmin-on-time 3000\ndefault-min-on-time\nmax-on-time 9000\nupdate-mqtt 60000\nset-delta-set-point 1.5\nset-delta-temp 1.5\nset-hum 50", "");
+      RebootRequested = 7;
+    }
+
     if (text.startsWith("set-temp "))
     {
       desiredT = extractFloat(text);
-      preferences.begin("incu1", false);
-      preferences.putFloat("desiredT", desiredT);
-      preferences.end();
+      preferences_command.begin("incu1", false);
+      preferences_command.putFloat("desiredT", desiredT);
+      preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
     if (text.startsWith("cycle-time "))
     {
       cycleTime = (int)extractFloat(text);
-      preferences.begin("incu1", false);
-      preferences.putInt("cycleTime", cycleTime);
-      preferences.end();
+      preferences_command.begin("incu1", false);
+      preferences_command.putInt("cycleTime", cycleTime);
+      preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
     if (text.startsWith("min-on-time "))
     {
       minOnTime = (int)extractFloat(text);
-      preferences.begin("incu1", false);
-      preferences.putInt("minOnTime", minOnTime);
-      preferences.end();
+      preferences_command.begin("incu1", false);
+      preferences_command.putInt("minOnTime", minOnTime);
+      preferences_command.end();
       customminOnTime = minOnTime;
-      preferences.begin("incu1", false);
-      preferences.putInt("customminOnTime", customminOnTime);
-      preferences.end();
+      preferences_command.begin("incu1", false);
+      preferences_command.putInt("customminOnTime", customminOnTime);
+      preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
     if (text == "default-min-on-time") {
       customminOnTime = 0;
-      preferences.begin("incu1", false);
-      preferences.putInt("customm", customminOnTime);
-      preferences.end();
+      preferences_command.begin("incu1", false);
+      preferences_command.putInt("customm", customminOnTime);
+      preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
     if (text.startsWith("max-on-time "))
     {
       maxOnTime = (int)extractFloat(text);
-      preferences.begin("incu1", false);
-      preferences.putInt("maxOnTime", maxOnTime);
-      preferences.end();
+      preferences_command.begin("incu1", false);
+      preferences_command.putInt("maxOnTime", maxOnTime);
+      preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
     if (text.startsWith("update-mqtt "))
     {
       TimeUpdateMQTT = (long)extractFloat(text);
-      preferences.begin("incu1", false);
-      preferences.putLong("TimQTT", TimeUpdateMQTT);
-      preferences.end();
+      preferences_command.begin("incu1", false);
+      preferences_command.putLong("TimQTT", TimeUpdateMQTT);
+      preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
     if (text.startsWith("set-delta-set-point "))
     {
       deltasetpoint = extractFloat(text);
-      preferences.begin("incu1", false);
-      preferences.putInt("deltase", (int)(deltasetpoint*100));
-      preferences.end();
+      preferences_command.begin("incu1", false);
+      preferences_command.putInt("deltase", (int)(deltasetpoint*100));
+      preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
     if (text.startsWith("set-delta-temp "))
     {
       deltaTemperature = extractFloat(text);
-      preferences.begin("incu1", false);
-      preferences.putInt("deltaTe", (int)(deltaTemperature*100));
-      preferences.end();
+      preferences_command.begin("incu1", false);
+      preferences_command.putInt("deltaTe", (int)(deltaTemperature*100));
+      preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
 
@@ -208,9 +213,9 @@ void handleNewMessages(int numNewMessages) {
     if (text.startsWith("set-hum "))
     {
       desiredH = extractFloat(text);
-      preferences.begin("incu1", false);
-      preferences.putFloat("desiredH", desiredH);
-      preferences.end();
+      preferences_command.begin("incu1", false);
+      preferences_command.putFloat("desiredH", desiredH);
+      preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
 

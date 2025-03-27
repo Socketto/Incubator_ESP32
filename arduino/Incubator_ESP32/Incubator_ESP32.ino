@@ -66,6 +66,7 @@ double histT = 0.1, histH = 10;
 
 bool Reset = false;
 Preferences preferences;
+Preferences preferences_command;
 
 volatile float humidity;
 unsigned long lastCheckLocalTime = 0;
@@ -170,25 +171,25 @@ void CheckLocalTime() {
 void setup() {
   xMutex = xSemaphoreCreateMutex();  // Creazione del mutex
   strcpy(ChipID, Network.macAddress().c_str());
-  preferences.begin("incu1", true);
+  preferences_command.begin("incu1", true);
   struct tm timeInfo;
-  animaleint = preferences.getInt("Animale", 0);
+  animaleint = preferences_command.getInt("Animale", 0);
   if (animaleint == 2) {
     AlarmsManagement = false;
   }
 
-  deltaTemperature = (double)preferences.getInt("deltaTe", 0.0)/100;
-  deltasetpoint = (double)preferences.getInt("deltase", 0)/100;
-  TimeUpdateMQTT = preferences.getLong("TimQTT", 60000);
-  maxOnTime = preferences.getInt("maxOnTime", 9000);
-  minOnTime = preferences.getInt("minOnTime", 3000);
-  cycleTime = preferences.getInt("cycleTime", 10000);
-  desiredT = preferences.getFloat("desiredT", 37);
-  desiredH = preferences.getFloat("desiredH", 70);
-  customminOnTime = preferences.getInt("customm", 0);
+  deltaTemperature = (double)preferences_command.getInt("deltaTe", 0.0)/100;
+  deltasetpoint = (double)preferences_command.getInt("deltase", 0)/100;
+  TimeUpdateMQTT = preferences_command.getLong("TimQTT", 60000);
+  maxOnTime = preferences_command.getInt("maxOnTime", 9000);
+  minOnTime = preferences_command.getInt("minOnTime", 3000);
+  cycleTime = preferences_command.getInt("cycleTime", 10000);
+  desiredT = preferences_command.getFloat("desiredT", 37);
+  desiredH = preferences_command.getFloat("desiredH", 70);
+  customminOnTime = preferences_command.getInt("customm", 0);
 
   initHeaterTask();
-  preferences.end();
+  preferences_command.end();
   Serial.begin(115200);
   Serial.println("setupIO()");
   setupIO();
