@@ -10,36 +10,36 @@ UniversalTelegramBot* bot;  // Pointer declaration
 char MessageAuthomatic[400];
 
 bool userAuthorized(String value) {
-    if (AdminTelegram == value) {
-      return true;  // value found
-    }
+  if (AdminTelegram == value) {
+    return true;  // value found
+  }
   return false;  // value not found
 }
 
 
 float extractFloat(String input) {
-    bool foundDigit = false;
-    String numStr = "";
-    
-    for (int i = 0; i < input.length(); i++) {
-        char c = input[i];
-        
+  bool foundDigit = false;
+  String numStr = "";
 
-        if (isdigit(c) || c == '.') {
-            numStr += c;
-            foundDigit = true;
-        } 
+  for (int i = 0; i < input.length(); i++) {
+    char c = input[i];
 
-        else if (c == '-' && !foundDigit && i + 1 < input.length() && isdigit(input[i + 1])) {
-            numStr += c;
-        }
 
-        else if (foundDigit) {
-            break;
-        }
+    if (isdigit(c) || c == '.') {
+      numStr += c;
+      foundDigit = true;
     }
-    
-    return numStr.length() > 0 ? numStr.toFloat() : 0.0;
+
+    else if (c == '-' && !foundDigit && i + 1 < input.length() && isdigit(input[i + 1])) {
+      numStr += c;
+    }
+
+    else if (foundDigit) {
+      break;
+    }
+  }
+
+  return numStr.length() > 0 ? numStr.toFloat() : 0.0;
 }
 
 char messaget[400];
@@ -76,9 +76,9 @@ void handleNewMessages(int numNewMessages) {
 
     if (text == "/status") {
       if (Temp1Ready) {
-        sprintf(messaget, "Wifi signal: %d%%\n%s\n%s\nTemperature: %2.1f°C\nHumidity: %2.1f%%\nStart: %s\nIP: http://%s", testpercentage, Animale, GiorniPassati, tempext, humidity,StartIncubata,WiFi.localIP().toString());
+        sprintf(messaget, "Wifi signal: %d%%\n%s\n%s\nTemperature: %2.1f°C\nHumidity: %2.1f%%\nStart: %s\nIP: http://%s", testpercentage, Animale, GiorniPassati, tempext, humidity, StartIncubata, WiFi.localIP().toString());
         bot->sendMessage(chat_id, messaget, "");
-        sprintf(messaget, "cycle-time %i\nmin-on-time %i\ncustomminOnTime %i\nmax-on-time %i\nset-delta-set-point %2.2f\nupdate-mqtt %lu\nset-delta-temp %2.2f", cycleTime, minOnTime, customminOnTime,maxOnTime, deltasetpoint, TimeUpdateMQTT,deltaTemperature );
+        sprintf(messaget, "cycle-time %i\nmin-on-time %i\ncustomminOnTime %i\nmax-on-time %i\nset-delta-set-point %2.2f\nupdate-mqtt %lu\nset-delta-temp %2.2f", cycleTime, minOnTime, customminOnTime, maxOnTime, deltasetpoint, TimeUpdateMQTT, deltaTemperature);
         bot->sendMessage(chat_id, messaget, "");
         MQTT_Publish();
       } else {
@@ -113,18 +113,18 @@ void handleNewMessages(int numNewMessages) {
       bot->sendMessage(chat_id, "Ok", "");
       AlarmsManagement = false;
     }
-    
+
     if (text == "reset-display") {
       ResetTFT();
       bot->sendMessage(chat_id, "Ok", "");
     }
 
-    if (text == "soft-reset-tft"){
+    if (text == "soft-reset-tft") {
       SoftResetTFT();
       bot->sendMessage(chat_id, "Ok", "");
     }
-    
-     
+
+
     if (text == "/reset") {
       Reset = true;
       bot->sendMessage(chat_id, "Ok", "");
@@ -137,27 +137,23 @@ void handleNewMessages(int numNewMessages) {
 
     if (text == "comandi") {
       bot->sendMessage(chat_id, "reset-display\nsoft-reset-tft\nset-temp 60\ncycle-time 10000\nmin-on-time 3000\ndefault-min-on-time\nmax-on-time 9000\nupdate-mqtt 60000\nset-delta-set-point 1.5\nset-delta-temp 1.5\nset-hum 50", "");
-      RebootRequested = 7;
     }
 
-    if (text.startsWith("set-temp "))
-    {
+    if (text.startsWith("set-temp ")) {
       desiredT = extractFloat(text);
       preferences_command.begin("incu1", false);
       preferences_command.putFloat("desiredT", desiredT);
       preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
-    if (text.startsWith("cycle-time "))
-    {
+    if (text.startsWith("cycle-time ")) {
       cycleTime = (int)extractFloat(text);
       preferences_command.begin("incu1", false);
       preferences_command.putInt("cycleTime", cycleTime);
       preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
-    if (text.startsWith("min-on-time "))
-    {
+    if (text.startsWith("min-on-time ")) {
       minOnTime = (int)extractFloat(text);
       preferences_command.begin("incu1", false);
       preferences_command.putInt("minOnTime", minOnTime);
@@ -175,50 +171,44 @@ void handleNewMessages(int numNewMessages) {
       preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
-    if (text.startsWith("max-on-time "))
-    {
+    if (text.startsWith("max-on-time ")) {
       maxOnTime = (int)extractFloat(text);
       preferences_command.begin("incu1", false);
       preferences_command.putInt("maxOnTime", maxOnTime);
       preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
-    if (text.startsWith("update-mqtt "))
-    {
+    if (text.startsWith("update-mqtt ")) {
       TimeUpdateMQTT = (long)extractFloat(text);
       preferences_command.begin("incu1", false);
       preferences_command.putLong("TimQTT", TimeUpdateMQTT);
       preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
-    if (text.startsWith("set-delta-set-point "))
-    {
+    if (text.startsWith("set-delta-set-point ")) {
       deltasetpoint = extractFloat(text);
       preferences_command.begin("incu1", false);
-      preferences_command.putInt("deltase", (int)(deltasetpoint*100));
+      preferences_command.putInt("deltase", (int)(deltasetpoint * 100));
       preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
-    if (text.startsWith("set-delta-temp "))
-    {
+    if (text.startsWith("set-delta-temp ")) {
       deltaTemperature = extractFloat(text);
       preferences_command.begin("incu1", false);
-      preferences_command.putInt("deltaTe", (int)(deltaTemperature*100));
+      preferences_command.putInt("deltaTe", (int)(deltaTemperature * 100));
       preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
 
 
 
-    if (text.startsWith("set-hum "))
-    {
+    if (text.startsWith("set-hum ")) {
       desiredH = extractFloat(text);
       preferences_command.begin("incu1", false);
       preferences_command.putFloat("desiredH", desiredH);
       preferences_command.end();
       bot->sendMessage(chat_id, "Ok", "");
     }
-
   }
 }
 
@@ -313,7 +303,7 @@ void TelegramLoop() {
           if (DebugMutex) {
             Serial.println("Mutex released");
           }
-          xSemaphoreGive(xMutex); 
+          xSemaphoreGive(xMutex);
         }
         Serial.println(bot->last_message_received);
         numNewMessages = bot->getUpdates(bot->last_message_received + 1);

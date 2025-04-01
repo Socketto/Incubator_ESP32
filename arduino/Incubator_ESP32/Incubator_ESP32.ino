@@ -169,28 +169,43 @@ void CheckLocalTime() {
 
 
 void setup() {
+  Serial.begin(115200);
   xMutex = xSemaphoreCreateMutex();  // Creazione del mutex
   strcpy(ChipID, Network.macAddress().c_str());
-  preferences_command.begin("incu1", true);
+  
   struct tm timeInfo;
-  animaleint = preferences_command.getInt("Animale", 0);
-  if (animaleint == 2) {
-    AlarmsManagement = false;
+  if(preferences_command.begin("incu1"))
+  {
+    animaleint = preferences_command.getInt("Animale", 0);
+    if (animaleint == 2) {
+      AlarmsManagement = false;
+    }
+
+    deltaTemperature = (double)preferences_command.getInt("deltaTe", 0.0)/100;
+    Serial.println(deltaTemperature);
+    deltasetpoint = (double)preferences_command.getInt("deltase", 0)/100;
+    Serial.println(deltasetpoint);
+    TimeUpdateMQTT = preferences_command.getLong("TimQTT", 60000);
+    Serial.println(TimeUpdateMQTT);
+    maxOnTime = preferences_command.getInt("maxOnTime", 9000);
+    Serial.println(maxOnTime);
+    minOnTime = preferences_command.getInt("minOnTime", 3000);
+    Serial.println(minOnTime);
+    cycleTime = preferences_command.getInt("cycleTime", 10000);
+    Serial.println(cycleTime);
+    desiredT = preferences_command.getFloat("desiredT", 37);
+    Serial.println(desiredT);
+    desiredH = preferences_command.getFloat("desiredH", 70);
+    Serial.println(desiredH);
+    customminOnTime = preferences_command.getInt("customm", 0);
+    Serial.println(customminOnTime);
+    preferences_command.end();
   }
-
-  deltaTemperature = (double)preferences_command.getInt("deltaTe", 0.0)/100;
-  deltasetpoint = (double)preferences_command.getInt("deltase", 0)/100;
-  TimeUpdateMQTT = preferences_command.getLong("TimQTT", 60000);
-  maxOnTime = preferences_command.getInt("maxOnTime", 9000);
-  minOnTime = preferences_command.getInt("minOnTime", 3000);
-  cycleTime = preferences_command.getInt("cycleTime", 10000);
-  desiredT = preferences_command.getFloat("desiredT", 37);
-  desiredH = preferences_command.getFloat("desiredH", 70);
-  customminOnTime = preferences_command.getInt("customm", 0);
-
+  else
+  {
+    Serial.println("ERROR (preferences_command.begin)");
+  }
   initHeaterTask();
-  preferences_command.end();
-  Serial.begin(115200);
   Serial.println("setupIO()");
   setupIO();
   Yellow(false);
@@ -198,8 +213,10 @@ void setup() {
   Serial.println("SetupTFT()");
   SetupTFT();
   TFT_log_init();
+  Serial.println("TFT_log_init");
   delay(200);
   WiFi.mode(WIFI_STA);
+  Serial.println("WiFi.mode(WIFI_STA)");
   preferences.begin("my-app", true);
   ssid = preferences.getString("SSID", "");
   ssidpassword = preferences.getString("SSIDPSW", "");
