@@ -390,7 +390,7 @@ void loop() {
       case 0:
         giornitotaliint = 21;
         strcpy(Animale, "Animale: Gallina");
-        if (giornipassatiint < 18) {
+        if (giornipassatiint <= 18) {
           StepIncubata = 1;
         } else {
           if (StepIncubata < 2)
@@ -400,7 +400,7 @@ void loop() {
       case 1:
         giornitotaliint = 17;
         strcpy(Animale, "Animale: Quaglia");
-        if (giornipassatiint < 15) {
+        if (giornipassatiint <= 15) {
           StepIncubata = 1;
         } else {
           if (StepIncubata < 2)
