@@ -203,6 +203,8 @@ void LCDTask(void* pvParameters) {
       {
         StatHTPrec = 100;
         StatHPrec = 100;
+        prevWifiStatus = 123;
+        ServerStatusPrec = 123;
       }
       if (ResetSoft) {
         ResetSoft = false;

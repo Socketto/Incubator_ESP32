@@ -1,7 +1,15 @@
 #include <WiFi.h>
 #include <Preferences.h>
-#define NTC_SAMPLES 50
+#define NTC_SAMPLES 30
 
+volatile int cycleTime = 10000; // 10 secondi
+volatile int minOnTime = 3000;  // 2 secondi
+volatile int customminOnTime = 0;
+volatile int maxOnTime = 9000;  // 9 secondi
+
+volatile double deltasetpoint = 0;
+volatile double deltaTemperature = 0;
+volatile long TimeUpdateMQTT = 60000;
 
 bool DebugMutex = false;
 
@@ -58,6 +66,7 @@ double histT = 0.1, histH = 10;
 
 bool Reset = false;
 Preferences preferences;
+Preferences preferences_command;
 
 volatile float humidity;
 unsigned long lastCheckLocalTime = 0;
@@ -160,16 +169,43 @@ void CheckLocalTime() {
 
 
 void setup() {
+  Serial.begin(115200);
   xMutex = xSemaphoreCreateMutex();  // Creazione del mutex
   strcpy(ChipID, Network.macAddress().c_str());
-  preferences.begin("time-info", true);
+  
   struct tm timeInfo;
-  animaleint = preferences.getInt("Animale", 0);
-  if (animaleint == 2) {
-    AlarmsManagement = false;
+  if(preferences_command.begin("incu1"))
+  {
+    animaleint = preferences_command.getInt("Animale", 0);
+    if (animaleint == 2) {
+      AlarmsManagement = false;
+    }
+
+    deltaTemperature = (double)preferences_command.getInt("deltaTe", 0.0)/100;
+    Serial.println(deltaTemperature);
+    deltasetpoint = (double)preferences_command.getInt("deltase", 0)/100;
+    Serial.println(deltasetpoint);
+    TimeUpdateMQTT = preferences_command.getLong("TimQTT", 60000);
+    Serial.println(TimeUpdateMQTT);
+    maxOnTime = preferences_command.getInt("maxOnTime", 9000);
+    Serial.println(maxOnTime);
+    minOnTime = preferences_command.getInt("minOnTime", 3000);
+    Serial.println(minOnTime);
+    cycleTime = preferences_command.getInt("cycleTime", 10000);
+    Serial.println(cycleTime);
+    desiredT = preferences_command.getFloat("desiredT", 37);
+    Serial.println(desiredT);
+    desiredH = preferences_command.getFloat("desiredH", 70);
+    Serial.println(desiredH);
+    customminOnTime = preferences_command.getInt("customm", 0);
+    Serial.println(customminOnTime);
+    preferences_command.end();
   }
-  preferences.end();
-  Serial.begin(115200);
+  else
+  {
+    Serial.println("ERROR (preferences_command.begin)");
+  }
+  initHeaterTask();
   Serial.println("setupIO()");
   setupIO();
   Yellow(false);
@@ -177,8 +213,11 @@ void setup() {
   Serial.println("SetupTFT()");
   SetupTFT();
   TFT_log_init();
+  Serial.println("TFT_log_init");
   delay(200);
   WiFi.mode(WIFI_STA);
+  Serial.println("WiFi.mode(WIFI_STA)");
+  preferences.begin("my-app", true);
   ssid = preferences.getString("SSID", "");
   ssidpassword = preferences.getString("SSIDPSW", "");
     if (ssid == "" || ssidpassword == "") {
@@ -206,8 +245,15 @@ void setup() {
     StartAPMode();
     return;
   }
+  else
+  {
+    setupAP();
+  }
   BOTtoken = preferences.getString("TELEGRAM_BOT", "");
+  Serial.println(BOTtoken);
   AdminTelegram = preferences.getString("TELEGRAM_ADMIN", "");
+  Serial.println(AdminTelegram);
+  preferences.end();
   Green(true);
   Serial.println("TelegramSetup()");
   TelegramSetup();
@@ -275,6 +321,10 @@ void loop() {
     checkAP();
     return;
   }
+  else
+  {
+    checkAP();
+  }
 
   if (millis() > lastCheckReboot + 1000) {  //1 minuto
     lastCheckReboot = millis();
@@ -340,7 +390,7 @@ void loop() {
       case 0:
         giornitotaliint = 21;
         strcpy(Animale, "Animale: Gallina");
-        if (giornipassatiint < 18) {
+        if (giornipassatiint <= 18) {
           StepIncubata = 1;
         } else {
           if (StepIncubata < 2)
@@ -350,7 +400,7 @@ void loop() {
       case 1:
         giornitotaliint = 17;
         strcpy(Animale, "Animale: Quaglia");
-        if (giornipassatiint < 15) {
+        if (giornipassatiint <= 15) {
           StepIncubata = 1;
         } else {
           if (StepIncubata < 2)
@@ -392,7 +442,7 @@ void loop() {
     PercentageGiorniPassati = (float)((float)(giornipassatiint * 100) / (float)(giornitotaliint));
     sprintf(GiorniPassati, "Giorni: %d/%d (%2.1f%%)", giornipassatiint, giornitotaliint, PercentageGiorniPassati);
 
-    if (millis() > lastTemperatureMQTT + 60000) {  //1 min
+    if (millis() > lastTemperatureMQTT + TimeUpdateMQTT) {  //60 sec
       lastTemperatureMQTT = millis();
       MQTT_Publish();
       if(autoresetDisplay > 0) //
@@ -400,9 +450,28 @@ void loop() {
         autoresetDisplay--;
         if(autoresetDisplay == 0)
         {
-          autoresetDisplay = 30; //30 min
+          autoresetDisplay = 30; //30 mim
           ResetTFT();
         }
+      }
+      if(customminOnTime == 0)
+      {
+          if(readtempEXT() <= 15)
+          {
+            minOnTime = 4000;
+          }
+          if(readtempEXT() > 15)
+          {
+            minOnTime = 3000;
+          }
+          if(readtempEXT() > 20)
+          {
+            minOnTime = 2000;
+          }
+          if(readtempEXT() > 25)
+          {
+            minOnTime = 1000;
+          }
       }
     }
 
@@ -425,12 +494,12 @@ void loop() {
       }
     }
     Updaterows();
-    if (Temp1Ready) {
+    /*if (Temp1Ready) {
       if (tempext > desiredT + histT)
         heater = false;
       if (tempext < desiredT - histT)
         heater = true;
-    }
+    }*/
     humidity = loopDHT();
     if (humidity >= 0) {
       ErrorHumidity = false;
@@ -443,7 +512,7 @@ void loop() {
       ErrorHumidity = true;
     }
     CheckLocalTime();
-    Relay1(heater);
+    //Relay1(heater);
     Relay2(humidifier);
     if (DebugMutex) {
       Serial.println("Mutex released");
